@@ -104,12 +104,41 @@ void test_remove_max(void) {
 	pqueue_destroy(pqueue);
 }
 
+void test_remove_node(void) {
+	PriorityQueue pqueue = pqueue_create(compare_ints, free, NULL);
+
+	// προσθήκη δεδομένων, αποθηκεύουμε τους κόμβους
+	int N = 10;
+	PriorityQueueNode nodes[N];
+
+	for (int i = 0; i < N; i++)
+		nodes[i] = pqueue_insert(pqueue, create_int(i));
+
+	// remove τους άρτιους (εδώ είμαστε περιττοί), το max δεν πρέπει να αλλάζει
+	int current_size = N;
+	for (int i = 0; i < N; i += 2) {
+		pqueue_remove_node(pqueue, nodes[i]);
+		TEST_ASSERT(*(int*)pqueue_max(pqueue) == N-1);
+		TEST_ASSERT(pqueue_size(pqueue) == --current_size);
+	}
+
+	// remove τους περιττούς με αντίστροφη σειρά, το max κάθε φορά αλλάζει
+	for (int i = N-1; i >= 0; i -= 2) {
+		TEST_ASSERT(*(int*)pqueue_max(pqueue) == i);
+		pqueue_remove_node(pqueue, nodes[i]);
+		TEST_ASSERT(pqueue_size(pqueue) == --current_size);
+	}
+
+	pqueue_destroy(pqueue);
+}
+
 
 // Λίστα με όλα τα tests προς εκτέλεση
 TEST_LIST = {
 	{ "pqueue_create", test_create },
 	{ "pqueue_insert", test_insert },
 	{ "pqueue_remove_max", test_remove_max },
+	{ "pqueue_remove_node", test_remove_node },
 
 	{ NULL, NULL } // τερματίζουμε τη λίστα με NULL
 };

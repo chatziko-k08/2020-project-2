@@ -60,6 +60,7 @@ DestroyFunc pqueue_set_destroy_value(PriorityQueue pqueue, DestroyFunc destroy_v
 void pqueue_destroy(PriorityQueue pqueue);
 
 
+
 //// Νέες συναρτήσεις για την εργασία 2 //////////////////////////////////////////
 
 // Επιστρέφει το περιεχόμενο του κόμβου node

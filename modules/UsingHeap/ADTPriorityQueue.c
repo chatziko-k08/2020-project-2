@@ -174,3 +174,19 @@ void pqueue_destroy(PriorityQueue pqueue) {
 
 	free(pqueue);
 }
+
+
+
+//// Νέες συναρτήσεις για την εργασία 2 //////////////////////////////////////////
+
+Pointer pqueue_node_value(PriorityQueue set, PriorityQueueNode node) {
+	return NULL;
+}
+
+void pqueue_remove_node(PriorityQueue pqueue, PriorityQueueNode node) {
+
+}
+
+void pqueue_update_order(PriorityQueue pqueue, PriorityQueueNode node) {
+
+}
