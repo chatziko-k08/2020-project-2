@@ -124,9 +124,14 @@ void test_remove_node(void) {
 		TEST_ASSERT(pqueue_size(pqueue) == --current_size);
 	}
 
-	// remove τους περιττούς με αντίστροφη σειρά, το max κάθε φορά αλλάζει
+	// remove τους περιττούς με αντίστροφη σειρά
 	for (int i = N-1; i >= 0; i -= 2) {
+		// το max κάθε φορά πρέπει να αλλάζει
 		TEST_ASSERT(*(int*)pqueue_max(pqueue) == i);
+
+		// έλεγχος ότι παρά τα removes, οι κόμβοι έχουν ακόμα τις σωστές τιμές
+		TEST_ASSERT(*(int*)pqueue_node_value(pqueue, nodes[i]) == i);
+
 		pqueue_remove_node(pqueue, nodes[i]);
 		TEST_ASSERT(pqueue_size(pqueue) == --current_size);
 	}
