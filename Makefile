@@ -7,19 +7,33 @@
 # Ολα τα directories μέσα στο programs directory
 PROGRAMS = $(subst programs/, , $(wildcard programs/*))
 
-# Compile: όλα
-all: tests
+# Compile: όλα, προγράμματα, tests
+all: programs tests
+
+# Η παρακάτω γραμμή δημιουργεί ένα target programs-<foo> για οποιοδήποτε <foo>. Η μεταβλητή $* περιέχει το "foo"
+programs-%:
+	$(MAKE) -C programs/$*
+
+programs: $(addprefix programs-, $(PROGRAMS))		# depend στο programs-<foo> για κάθε στοιχείο του PROGRAMS
 
 .PHONY: tests
 tests:
 	$(MAKE) -C tests all
 
 # Εκτέλεση: όλα
-run: run-tests
+run: run-programs run-tests
+
+run-programs-%:
+	$(MAKE) -C programs/$* run
+
+run-programs: $(addprefix run-programs-, $(PROGRAMS))
 
 run-tests:
 	$(MAKE) -C tests run
 
 # Εκκαθάριση
-clean:
+clean-programs-%:
+	$(MAKE) -C programs/$* clean
+
+clean: $(addprefix clean-programs-, $(PROGRAMS))
 	$(MAKE) -C tests clean
