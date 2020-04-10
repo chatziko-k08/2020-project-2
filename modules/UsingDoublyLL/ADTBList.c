@@ -10,7 +10,7 @@
 #include "ADTBList.h"
 
 
-// Ενα BBList είναι pointer σε αυτό το struct
+// Ενα BList είναι pointer σε αυτό το struct
 struct blist {
 	// ...
 };
