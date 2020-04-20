@@ -86,7 +86,7 @@ COV_FILES := $(patsubst %.o,%.gcda,$(OBJS)) $(patsubst %.o,%.gcno,$(OBJS))
 RUN_TARGETS ?= $(addprefix run-, $(PROGS))
 VAL_TARGETS ?= $(addprefix valgrind-, $(PROGS))
 COV_TARGETS ?= $(addprefix coverage-, $(PROGS))
-
+$(info    VAR is $(RUN_TARGETS))
 # Για κάθε test (*_test) θέτουμε τις παρεμέτρους του (<test>_ARGS) από default σε --time
 $(foreach test, $(filter %_test, $(PROGS)),	\
 	$(eval $(test)_ARGS ?= --time)			\

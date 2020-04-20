@@ -102,3 +102,8 @@ Pointer vector_node_value(Vector vec, VectorNode node);
 // Επιστρέφει τον κόμβο του στοιχείου, ή VECTOR_EOF αν δεν βρεθεί.
 
 VectorNode vector_find_node(Vector vec, Pointer value, CompareFunc compare);
+
+// Επιστρέφει τον αριθμό βημάτων που πραγματοποίησε η συνάρτηση
+// vector_* που κλήθηκε τελευταία (όποια και να ήταν αυτή).
+
+int vector_steps(Vector vector);

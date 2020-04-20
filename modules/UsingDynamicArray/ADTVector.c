@@ -26,8 +26,12 @@ struct vector {
 	DestroyFunc destroy_value;	// Συνάρτηση που καταστρέφει ένα στοιχείο του vector.
 };
 
+//Ορίζουμε μια global μεταβλητή steps η οποία θα ισούται με τον αριθμό των βημάτων που κάναμε στην τελευταία κλήση κάποιας vector συνάρτησης
+int steps=0;
+
 
 Vector vector_create(int size, DestroyFunc destroy_value) {
+	steps = 1;
 	// Δημιουργία του struct
 	Vector vec = malloc(sizeof(*vec));
 
@@ -45,12 +49,13 @@ Vector vector_create(int size, DestroyFunc destroy_value) {
 }
 
 int vector_size(Vector vec) {
+	steps = 1;
 	return vec->size;
 }
 
 Pointer vector_get_at(Vector vec, int pos) {
 	assert(pos >= 0 && pos < vec->size);	// LCOV_EXCL_LINE (αγνοούμε το branch από τα coverage reports, είναι δύσκολο να τεστάρουμε το false γιατί θα κρασάρει το test)
-
+	steps = 1;
 	return vec->array[pos].value;
 }
 
@@ -62,15 +67,22 @@ void vector_set_at(Vector vec, int pos, Pointer value) {
 		vec->destroy_value(vec->array[pos].value);
 
 	vec->array[pos].value = value;
+	steps = 1;
 }
 
 void vector_insert_last(Vector vec, Pointer value) {
 	// Μεγαλώνουμε τον πίνακα (αν χρειαστεί), ώστε να χωράει τουλάχιστον size στοιχεία
 	// Διπλασιάζουμε κάθε φορά το capacity (σημαντικό για την πολυπλοκότητα!)
+	
+	steps = 1; // αρχικοποιούμε την μεταβλητή με 1 
+	
 	if (vec->capacity == vec->size) {
 		// Προσοχή: δεν πρέπει να κάνουμε free τον παλιό pointer, το κάνει η realloc
 		vec->capacity *= 2;
 		vec->array = realloc(vec->array, vec->capacity * sizeof(*vec->array));
+
+		//Σε περίπτωση που χρησιμοποιήσουμε την realloc θα πρεπει να αλλάξουμε την μεταβλητη steps
+		steps = vec->capacity; // κάναμε n βήματα
 	}
 
 	// Μεγαλώνουμε τον πίνακα και προσθέτουμε το στοιχείο
@@ -80,6 +92,8 @@ void vector_insert_last(Vector vec, Pointer value) {
 
 void vector_remove_last(Vector vec) {
 	assert(vec->size != 0);		// LCOV_EXCL_LINE
+
+	steps = 1; //αρχικοποιούμε την μεταβλητή steps
 
 	// Αν υπάρχει συνάρτηση destroy_value, την καλούμε για το στοιχείο που αφαιρείται
 	if (vec->destroy_value != NULL)
@@ -95,35 +109,49 @@ void vector_remove_last(Vector vec) {
 	if (vec->capacity > vec->size * 4 && vec->capacity > 2*VECTOR_MIN_CAPACITY) {
 		vec->capacity /= 2;
 		vec->array = realloc(vec->array, vec->capacity * sizeof(*vec->array));
+
+		//Σε περίπτωση που χρησιμοποιήσουμε την realloc θα πρεπει να αλλάξουμε την μεταβλητη steps
+		steps = vec->capacity; // κάναμε n βήματα
 	}
 }
 
 Pointer vector_find(Vector vec, Pointer value, CompareFunc compare) {
 	// Διάσχιση του vector
-	for (int i = 0; i < vec->size; i++)
+	steps = 0;
+	for (int i = 0; i < vec->size; i++) {
+		steps++;
 		if (compare(vec->array[i].value, value) == 0)
 			return vec->array[i].value;		// βρέθηκε
-
+	}
 	return NULL;				// δεν υπάρχει
 }
 
 DestroyFunc vector_set_destroy_value(Vector vec, DestroyFunc destroy_value) {
 	DestroyFunc old = vec->destroy_value;
 	vec->destroy_value = destroy_value;
+
+	steps = 1;
+
 	return old;
 }
 
 void vector_destroy(Vector vec) {
+	steps = 0;
+
 	// Αν υπάρχει συνάρτηση destroy_value, την καλούμε για όλα τα στοιχεία
 	if (vec->destroy_value != NULL)
-		for (int i = 0; i < vec->size; i++)
+		for (int i = 0; i < vec->size; i++) {
+			steps++;
 			vec->destroy_value(vec->array[i].value);
-
+		}
 	// Πρέπει να κάνουμε free τόσο τον πίνακα όσο και το struct!
 	free(vec->array);
 	free(vec);			// τελευταίο το vec!
 }
 
+int vector_steps(Vector vector) {
+	return steps;
+}
 
 // Συναρτήσεις για διάσχιση μέσω node /////////////////////////////////////////////////////
 
@@ -161,9 +189,12 @@ Pointer vector_node_value(Vector vec, VectorNode node) {
 
 VectorNode vector_find_node(Vector vec, Pointer value, CompareFunc compare) {
 	// Διάσχιση του vector
-	for (int i = 0; i < vec->size; i++)
+	steps = 0;
+
+	for (int i = 0; i < vec->size; i++) {
+		steps++;
 		if (compare(vec->array[i].value, value) == 0)
 			return &vec->array[i];		// βρέθηκε
-
+	}
 	return VECTOR_EOF;				// δεν υπάρχει
 }
