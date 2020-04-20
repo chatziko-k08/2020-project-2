@@ -7,7 +7,7 @@ UsingLinkedList_ADTList_test_OBJS       = ADTList_test.o $(MODULES)/UsingLinkedL
 
 # # Υλοποιήσεις μέσω διπλά συνδεδεμένης λίστας: ADTΒList
 # #
-UsingDoublyLL_ADTBList_test_OBJS        = ADTBList_test.o $(MODULES)/UsingDoublyLL/ADTBList.o
+ADTBList_test_OBJS        = ADTBList_test.o $(MODULES)/UsingDoublyLL/ADTBList.o
 
 # # Υλοποιήσεις μέσω Heap: ADTPriorityQueue
 # # Το Heap αλλά και το test χρησιμοποιούν Vector, οπότε χρειαζόμαστε και μια υλοποίηση του ADTVector.

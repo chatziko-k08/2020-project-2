@@ -43,6 +43,7 @@ int blist_size(BList blist);
 void blist_insert(BList blist, BListNode node, Pointer value);
 
 // Αφαιρεί τον κόμβο node (πρέπει να υπάρχει στη λίστα).
+//Αν ο χρήστης περάσει για τιμή του node την τιμή NULL τότε θα διαγράψουμε τον τελευταίο κόμβο.
 
 void blist_remove(BList blist, BListNode node);
 

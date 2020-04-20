@@ -27,7 +27,6 @@ struct blist_node {
 
 
 BList blist_create(DestroyFunc destroy_value) {
-	assert(destroy_value != NULL);
 
 	BList list = malloc(sizeof(*list));
 
@@ -54,7 +53,7 @@ void blist_insert(BList blist, BListNode node, Pointer value) {
 	
 	//Αν το node είναι το BLIST_EOF τότε προσθέτουμε τον κόμβο στο τέλος
 	if (node == BLIST_EOF) {
-		new->next = BLIST_BOF;
+		new->next = BLIST_EOF;
 		new->prev = blist->last;
 		
 		//Σε περίπτωση που η λίστα είναι εντελώς κενή τότε πρέπει να θέσουμε και το blist->first
@@ -68,6 +67,7 @@ void blist_insert(BList blist, BListNode node, Pointer value) {
 		//Θέτουμε την καινούργια ουρά να είναι το new node
 		blist->last = new;
 
+		blist->size++;
 	} else {
 		BListNode prev = node->prev;
 		
@@ -83,18 +83,45 @@ void blist_insert(BList blist, BListNode node, Pointer value) {
 		
 		new->prev = prev;
 
-		if(node == blist->first)
+		if (node == blist->first)
 			blist->first = new;
+
+		blist->size++;
 	}
 }
 
 void blist_remove(BList blist, BListNode node) {
 	assert(blist != NULL);
 	//Αν ο χρήστης περάσει για τιμή του node την τιμή NULL τότε θα διαγράψουμε τον τελευταίο κόμβο.
+	if (node == NULL)
+		node = blist->last;
+	//Αν ο node δεν είναι NULL και δεν είναι ούτε ο blist->last τότε
+	if (node) {
+		BListNode prev, next;
+		//Θέτουμε τους 2 pointers για να εξηγήσουμε πιο αναλυτικά την διαδικασία
+		prev = node->prev;
+		next = node->next;
 
-	if(node) {
-		
+		//Τώρα πρέπει να συνδέσουμε τα prev και next μεταξυ τους
+		if (prev != NULL)
+			prev->next = next;
+		if (next != NULL)
+			next->prev = prev;
+
+		//Αν ο node είναι το blist->first τότε θέτουμε το next ως το καινούργιο blist->first
+		if (node == blist->first)
+			blist->first = next;
+		//Αντίστοιχα αν είναι το blist->last θέτουμε το prev ως νέο blist->last
+		if (node == blist->last)
+			blist->last = prev;
+
+		//Τώρα μένει μόνο να καταστρέψουμε τον κόμβο
+		if (blist->destroy_value != NULL)
+			blist->destroy_value(node->value);
+		free(node);
+		blist->size--;
 	}
+	
 }
 
 Pointer blist_find(BList blist, Pointer value, CompareFunc compare) {
@@ -118,7 +145,8 @@ void blist_destroy(BList blist) {
 	//Προσπελαύνουμε την λίστα:
 	while (node != BLIST_EOF) {
 		//Καταστρέφουμε τα values πρώτα
-		blist->destroy_value(node->value);
+		if (blist->destroy_value != NULL)
+			blist->destroy_value(node->value);
 		//Αποθηκεύουμε τον επόμενο κόμβο και καταστρεφουμε τον τρέχον
 		next = node->next;
 		free(node);
