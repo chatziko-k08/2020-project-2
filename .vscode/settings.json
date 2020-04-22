@@ -4,7 +4,7 @@
 		"dir": "tests",
 
 		// Όνομα του εκτελέσιμου προγράμματος
-		"program": "ADTBList_test",
+		"program": "UsingADTSet_ADTPriorityQueue_test",
 
 		// Ορίσματα του προγράμματος.
 		// - Για ανακατεύθυνση εισόδου βάζουμε ορίσματα: "<", "input-file"
@@ -16,8 +16,8 @@
 		"arg1": "#type",
 		"arg2": "=",
 		"arg3": "real",
-		"arg4": "#>",
-		"arg5": "amortized.csv",
+		"arg4": "",
+		"arg5": "",
 		"arg6": "",
 	},
 }

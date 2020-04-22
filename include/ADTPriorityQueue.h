@@ -65,7 +65,7 @@ void pqueue_destroy(PriorityQueue pqueue);
 
 // Επιστρέφει το περιεχόμενο του κόμβου node
 
-Pointer pqueue_node_value(PriorityQueue set, PriorityQueueNode node);
+Pointer pqueue_node_value(PriorityQueue pqueue, PriorityQueueNode node);
 
 // Αφαιρεί τον κόμβο node ο οποίος μπορεί να βρίσκεται σε οποιαδήποτε θέση της ουράς
 // (μη ορισμένη συμπεριφορά αν δεν ανήκει στην ουρά).

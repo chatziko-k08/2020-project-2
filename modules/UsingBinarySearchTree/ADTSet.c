@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
-
+#include <stdio.h>
 #include "ADTSet.h"
 
 
@@ -20,6 +20,7 @@ struct set {
 
 // Ενώ το struct set_node είναι κόμβος ενός Δυαδικού Δέντρου Αναζήτησης
 struct set_node {
+	SetNode parent;
 	SetNode left, right;		// Παιδιά
 	Pointer value;
 };
@@ -41,6 +42,7 @@ static SetNode node_create(Pointer value) {
 	node->left = NULL;
 	node->right = NULL;
 	node->value = value;
+	node->parent = NULL;
 	return node;
 }
 
@@ -128,14 +130,18 @@ static SetNode node_find_next(SetNode node, CompareFunc compare, SetNode target)
 // Αν υπάρχει κόμβος με τιμή ισοδύναμη της value, αλλάζει την τιμή του σε value, διαφορετικά προσθέτει
 // νέο κόμβο με τιμή value. Επιστρέφει τη νέα ρίζα του υποδέντρου, και θέτει το *inserted σε true
 // αν έγινε προσθήκη, ή false αν έγινε ενημέρωση.
-
+SetNode cur_parent = NULL;
 static SetNode node_insert(SetNode node, CompareFunc compare, Pointer value, bool* inserted, Pointer* old_value) {
 	// Αν το υποδέντρο είναι κενό, δημιουργούμε νέο κόμβο ο οποίος γίνεται ρίζα του υποδέντρου
 	if (node == NULL) {
 		*inserted = true;			// κάναμε προσθήκη
-		return node_create(value);
+		SetNode n = node_create(value);
+		n->parent = cur_parent;
+		return n;
 	}
 
+	cur_parent = node;
+	
 	// Το που θα γίνει η προσθήκη εξαρτάται από τη διάταξη της τιμής
 	// value σε σχέση με την τιμή του τρέχοντος κόμβου (node->value)
 	//
@@ -193,12 +199,16 @@ static SetNode node_remove(SetNode node, CompareFunc compare, Pointer value, boo
 		if (node->left == NULL) {
 			// Δεν υπάρχει αριστερό υποδέντρο, οπότε διαγράφεται απλά ο κόμβος και νέα ρίζα μπαίνει το δεξί παιδί
 			SetNode right = node->right;	// αποθήκευση πριν το free!
+			if (right != NULL)
+				right->parent = node->parent;
 			free(node);
 			return right;
 
 		} else if (node->right == NULL) {
 			// Δεν υπάρχει δεξί υποδέντρο, οπότε διαγράφεται απλά ο κόμβος και νέα ρίζα μπαίνει το αριστερό παιδί
 			SetNode left = node->left;		// αποθήκευση πριν το free!
+			if (left != NULL)
+				left->parent = node->parent;
 			free(node);
 			return left;
 
@@ -212,6 +222,7 @@ static SetNode node_remove(SetNode node, CompareFunc compare, Pointer value, boo
 			// Σύνδεση του min_right στη θέση του node
 			min_right->left = node->left;
 			min_right->right = node->right;
+			min_right->parent = node->parent;
 
 			free(node);
 			return min_right;
@@ -361,3 +372,18 @@ bool set_is_proper(Set node) {
 }
 
 // LCOV_EXCL_STOP
+
+//ADD ON
+Pointer set_node_remove_specific(Set set, SetNode node) {
+	bool removed;
+	Pointer old_value = NULL;
+	SetNode par = node->parent;
+	SetNode *child = par->left == node ? &par->left : &par->right;
+	*child = node_remove(node, set->compare, node->value, &removed, &old_value);
+
+	// Το size αλλάζει μόνο αν πραγματικά αφαιρεθεί ένας κόμβος
+	if (removed)
+		set->size--;
+	
+	return old_value;
+}

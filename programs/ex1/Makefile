@@ -21,4 +21,4 @@
 vector_insert_steps_OBJS = vector_insert_steps.o $(MODULES)/UsingDynamicArray/ADTVector.o
 
 # Ο βασικός κορμός του Makefile
-include ../common.mk
+include ../../common.mk
