@@ -52,7 +52,7 @@ void blist_insert(BList blist, BListNode node, Pointer value) {
 	new->value = value;
 	
 	//Αν το node είναι το BLIST_EOF τότε προσθέτουμε τον κόμβο στο τέλος
-	if (node == BLIST_EOF) {
+	if (node == BLIST_EOF || blist->size == 0) {
 		new->next = BLIST_EOF;
 		new->prev = blist->last;
 		

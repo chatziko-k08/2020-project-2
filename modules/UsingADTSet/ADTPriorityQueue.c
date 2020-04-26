@@ -63,10 +63,11 @@ Pointer pqueue_max(PriorityQueue pqueue) {
 }
 
 PriorityQueueNode pqueue_insert(PriorityQueue pqueue, Pointer value) {
-    //Βάζουμε το value στο set 
+    //Βάζουμε το value στο set
     set_insert(pqueue->set, value);
     PriorityQueueNode pq_node = malloc(sizeof(*pq_node));
     set_insert(pqueue->pq_node_set, pq_node);
+    
     pq_node->node = set_find_node(pqueue->set, value);
     
     return pq_node;

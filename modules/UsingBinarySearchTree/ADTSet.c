@@ -142,6 +142,7 @@ static SetNode node_find_next(SetNode node, CompareFunc compare, SetNode target)
 // αν έγινε προσθήκη, ή false αν έγινε ενημέρωση.
 SetNode cur_parent = NULL;
 static SetNode node_insert(SetNode node, CompareFunc compare, Pointer value, bool* inserted, Pointer* old_value) {
+	
 	// Αν το υποδέντρο είναι κενό, δημιουργούμε νέο κόμβο ο οποίος γίνεται ρίζα του υποδέντρου
 	if (node == NULL) {
 		*inserted = true;			// κάναμε προσθήκη
@@ -149,24 +150,22 @@ static SetNode node_insert(SetNode node, CompareFunc compare, Pointer value, boo
 		n->parent = cur_parent;
 
 		//προσθέτουμε το Node και στο BList values
-		BListNode parent_node = cur_parent ? blist_find(values_list, cur_parent, node_compare) : NULL;
+		BListNode parent_node = cur_parent ? blist_find_node(values_list, cur_parent, node_compare) : BLIST_EOF;
 		if (parent_node) {
-			if (compare(value, cur_parent->value) > 0)
+			if (compare(value, cur_parent->value) >= 0)
 				parent_node = blist_next(values_list, parent_node);
 		}
 		//Προσθετουμε το n στο values_list
 		blist_insert(values_list, parent_node, n);
 		n->self = blist_find_node(values_list, n, node_compare);
-
+	
 		return n;
 	}
 
 	cur_parent = node;
-	
 	// Το που θα γίνει η προσθήκη εξαρτάται από τη διάταξη της τιμής
 	// value σε σχέση με την τιμή του τρέχοντος κόμβου (node->value)
 	//
-	printf("%d %d\n", *(int*)value, *(int*)node->value);
 	int compare_res = compare(value, node->value);
 	if (compare_res == 0) {
 		// βρήκαμε ισοδύναμη τιμή, κάνουμε update
@@ -416,10 +415,11 @@ Pointer set_node_remove_specific(Set set, SetNode node) {
 	SetNode par = node->parent;
 	SetNode *child = par->left == node ? &par->left : &par->right;
 	*child = node_remove(node, set->compare, node->value, &removed, &old_value);
-
-	// Το size αλλάζει μόνο αν πραγματικά αφαιρεθεί ένας κόμβος
-	if (removed)
-		set->size--;
 	
+	// Το size αλλάζει μόνο αν πραγματικά αφαιρεθεί ένας κόμβος
+	if (removed){
+		set->size--;
+	}
+	printf("------------------------------------\n");
 	return old_value;
 }
