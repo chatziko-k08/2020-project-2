@@ -4,7 +4,7 @@
 		"dir": "tests",
 
 		// Όνομα του εκτελέσιμου προγράμματος
-		"program": "UsingADTSet_ADTPriorityQueue_test",
+		"program": "UsingBinarySearchTree_ADTSet_test",
 
 		// Ορίσματα του προγράμματος.
 		// - Για ανακατεύθυνση εισόδου βάζουμε ορίσματα: "<", "input-file"

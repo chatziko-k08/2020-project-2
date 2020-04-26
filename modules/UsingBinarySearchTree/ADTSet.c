@@ -158,7 +158,8 @@ static SetNode node_insert(SetNode node, CompareFunc compare, Pointer value, boo
 		//Προσθετουμε το n στο values_list
 		blist_insert(values_list, parent_node, n);
 		n->self = blist_find_node(values_list, n, node_compare);
-	
+		
+
 		return n;
 	}
 
@@ -346,6 +347,7 @@ DestroyFunc set_set_destroy_value(Set vec, DestroyFunc destroy_value) {
 
 void set_destroy(Set set) {
 	node_destroy(set->root, set->destroy_value);
+	blist_destroy(set->values);
 	free(set);
 }
 
@@ -355,7 +357,6 @@ SetNode set_first(Set set) {
 }
 
 SetNode set_last(Set set) {
-	return blist_node_value(set->values, blist_last(set->values));
 	return node_find_max(set->root);
 }
 
@@ -420,6 +421,5 @@ Pointer set_node_remove_specific(Set set, SetNode node) {
 	if (removed){
 		set->size--;
 	}
-	printf("------------------------------------\n");
 	return old_value;
 }
