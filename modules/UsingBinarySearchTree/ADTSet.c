@@ -166,6 +166,7 @@ static SetNode node_insert(SetNode node, CompareFunc compare, Pointer value, boo
 	// Το που θα γίνει η προσθήκη εξαρτάται από τη διάταξη της τιμής
 	// value σε σχέση με την τιμή του τρέχοντος κόμβου (node->value)
 	//
+	printf("%d %d\n", *(int*)value, *(int*)node->value);
 	int compare_res = compare(value, node->value);
 	if (compare_res == 0) {
 		// βρήκαμε ισοδύναμη τιμή, κάνουμε update
@@ -350,18 +351,22 @@ void set_destroy(Set set) {
 }
 
 SetNode set_first(Set set) {
+	return blist_node_value(set->values, blist_first(set->values));
 	return node_find_min(set->root);
 }
 
 SetNode set_last(Set set) {
+	return blist_node_value(set->values, blist_last(set->values));
 	return node_find_max(set->root);
 }
 
 SetNode set_previous(Set set, SetNode node) {
+	return blist_node_value(set->values, blist_previous(set->values, node->self));
 	return node_find_previous(set->root, set->compare, node);
 }
 
 SetNode set_next(Set set, SetNode node) {
+	return blist_node_value(set->values, blist_next(set->values, node->self));
 	return node_find_next(set->root, set->compare, node);
 }
 
