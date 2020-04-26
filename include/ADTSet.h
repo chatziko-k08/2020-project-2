@@ -86,4 +86,10 @@ Pointer set_node_value(Set set, SetNode node);
 
 SetNode set_find_node(Set set, Pointer value);
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Προσθήκη για την εργασία 2
 Pointer set_node_remove_specific(Set set, SetNode node);
+
+//Για ταχύτητα στην υλοποίηση πρόσθεσαμε και ένα πεδίο parent στο set node.

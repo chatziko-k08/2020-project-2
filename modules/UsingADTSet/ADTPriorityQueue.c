@@ -6,9 +6,19 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h> //Ο μόνος λόγος για να συμπεριλάβουμε την string.h έιναι για να χρησιμοποιήσουμε την memcpy
+
+void destroy_pq_node(Pointer node) {
+    free(node);
+}
+
+int compare_pq_nodes(Pointer a, Pointer b) {
+    return 1; //δεν έχει σημασία η σύγκριση των pq nodes
+}
+
 // Ενα PriorityQueue είναι pointer σε αυτό το struct
 struct priority_queue {
     Set set; // το set στην οποία αποθηκεύουμε τα στοιχεία
+    Set pq_node_set; //το set στο οποίο θα αποθηκεύω όλα τα pq_nodes ώστε να μην έχω leaks μετά
 };
 
 struct priority_queue_node {
@@ -23,6 +33,9 @@ PriorityQueue pqueue_create(CompareFunc compare, DestroyFunc destroy_value, Vect
     //Η priority queue "είναι" ένα set οπότε το μόνο που έχουμε να κάνουμε είναι
     //να δημιουργήσουμε ένα set και να βάλουμε τα στοιχεία του value_vector αν αυτό είναι γεμάτο
     pqueue->set = set_create(compare, destroy_value);
+    
+    //δημιουργούμε και το set των pq nodes
+    pqueue->pq_node_set = set_create(compare_pq_nodes, destroy_pq_node);
 
     if(values != NULL) {
         //Για να είμαστε σίγουροι ότι τα στοιχεία του vector 
@@ -53,6 +66,7 @@ PriorityQueueNode pqueue_insert(PriorityQueue pqueue, Pointer value) {
     //Βάζουμε το value στο set 
     set_insert(pqueue->set, value);
     PriorityQueueNode pq_node = malloc(sizeof(*pq_node));
+    set_insert(pqueue->pq_node_set, pq_node);
     pq_node->node = set_find_node(pqueue->set, value);
     
     return pq_node;
@@ -71,7 +85,7 @@ DestroyFunc pqueue_set_destroy_value(PriorityQueue pqueue, DestroyFunc destroy_v
 void pqueue_destroy(PriorityQueue pqueue) {
     //Καλούμε την set_destroy
     set_destroy(pqueue->set);
-
+    set_destroy(pqueue->pq_node_set);
     //και καταστρέφουμε και την μνήμη που καταλαμβάνει η pqueue
     free(pqueue);
 }
@@ -91,6 +105,4 @@ void pqueue_update_order(PriorityQueue pqueue, PriorityQueueNode node) {
     Pointer item = set_node_remove_specific(pqueue->set, node->node);
     //και τον ξαναπροσθέτουμε
     pqueue_insert(pqueue, item);
-
-    
 }

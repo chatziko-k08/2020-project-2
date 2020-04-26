@@ -15,8 +15,22 @@ struct priority_queue {
 	Vector vector;				// Τα δεδομένα, σε Vector ώστε να έχουμε μεταβλητό μέγεθος χωρίς κόπο
 	CompareFunc compare;		// Η διάταξη
 	DestroyFunc destroy_value;	// Συνάρτηση που καταστρέφει ένα στοιχείο του vector.
+	Vector pq_node_vec;			//Βοηθητική δομή ώστε να κρατάμε τους pq nodes και αν τους διαγράψουμε στο τέλος
 };
 
+struct priority_queue_node {
+	Pointer value; //Θα δείχνει σε ένα value το οπίο είναι αποθηκευμένο στο pqueue->vector 
+};
+
+//Συναρτήσεις για τo pq nodes' vector 
+void destroy_pq_node(Pointer node) {
+	free(node);
+}
+
+int compare_pq_node(Pointer a, Pointer b) {
+	//εφόσσον δεν μας ενδιαφέρει η σειρά και απλα αποθηκεύουμε χύμα nodes δεν μας νοιάζει ούτε η σειρά
+	return 1; //ΛΟΛ
+}
 
 // Βοηθητικές συναρτήσεις ////////////////////////////////////////////////////////////////////////////
 
@@ -108,6 +122,9 @@ PriorityQueue pqueue_create(CompareFunc compare, DestroyFunc destroy_value, Vect
 	PriorityQueue pqueue = malloc(sizeof(*pqueue));
 	pqueue->compare = compare;
 	pqueue->destroy_value = destroy_value;
+	
+	//Φτιάχνουμε το vector που θα αποθηκεύουμε τα pq nodes
+	pqueue->pq_node_vec = vector_create(0, NULL);
 
 	// Δημιουργία του vector που αποθηκεύει τα στοιχεία.
 	// ΠΡΟΣΟΧΗ: ΔΕΝ περνάμε την destroy_value στο vector!
@@ -139,8 +156,12 @@ PriorityQueueNode pqueue_insert(PriorityQueue pqueue, Pointer value) {
 	bubble_up(pqueue, pqueue_size(pqueue));
 
 	// TODO: υλοποίηση κόμβων και επιστροφή.
-
-	return NULL;
+	PriorityQueueNode pq_node = malloc(sizeof(*pq_node));
+	pq_node->value = value;
+	//βάζουμε τον κόμβο στο 'dummy' vector
+	vector_insert_last(pqueue->pq_node_vec, pq_node);
+	
+	return pq_node;
 }
 
 void pqueue_remove_max(PriorityQueue pqueue) {
@@ -173,6 +194,10 @@ void pqueue_destroy(PriorityQueue pqueue) {
 	vector_set_destroy_value(pqueue->vector, pqueue->destroy_value);
 	vector_destroy(pqueue->vector);
 
+	//Καταστρέφουμε τα pq nodes
+	vector_set_destroy_value(pqueue->pq_node_vec, destroy_pq_node);
+	vector_destroy(pqueue->pq_node_vec);
+
 	free(pqueue);
 }
 
@@ -181,13 +206,45 @@ void pqueue_destroy(PriorityQueue pqueue) {
 //// Νέες συναρτήσεις για την εργασία 2 //////////////////////////////////////////
 
 Pointer pqueue_node_value(PriorityQueue set, PriorityQueueNode node) {
-	return NULL;
+	return node->value;
 }
 
 void pqueue_remove_node(PriorityQueue pqueue, PriorityQueueNode node) {
+	//Η λογική είναι η εξής:
+	//1. Ανταλλάσουμε τιμές του value και της ρίζας του heap_last
+	//2  εκτελούμε vector_remove_last
+	//3. εκτελούμε bubble_down για το value
+	VectorNode vnode = vector_find_node(pqueue->vector, node->value, pqueue->compare);
+	int last_node = pqueue_size(pqueue);
+	int my_node = 1;
+	assert(last_node != 0);
+	
+	//Για να βρω την θέση του node θα υπολογισω την θέση με την βοηθεια vector_prev
+	while (vector_previous(pqueue->vector, vnode) != VECTOR_EOF) {
+		my_node ++;
+		vnode = vector_previous(pqueue->vector, vnode);
+	}
 
+	node_swap(pqueue, my_node, last_node);
+
+	if (pqueue->destroy_value != NULL)
+		pqueue->destroy_value(node->value);
+
+	//Διαγράφουμε το last element
+	vector_remove_last(pqueue->vector);
+
+	bubble_down(pqueue, my_node);
 }
 
 void pqueue_update_order(PriorityQueue pqueue, PriorityQueueNode node) {
+	VectorNode vnode = vector_find_node(pqueue->vector, node->value, pqueue->compare);
+	int my_node = 1;
 
+	while (vector_previous(pqueue->vector, vnode) != VECTOR_EOF) {
+		my_node++;
+		vnode = vector_previous(pqueue->vector, vnode);
+	}
+
+	bubble_down(pqueue, my_node);
+	bubble_up(pqueue, my_node);
 }
