@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include "ADTSet.h"
-
+#include "ADTBList.h"
 
 // Υλοποιούμε τον ADT Set μέσω BST, οπότε το struct set είναι ένα Δυαδικό Δέντρο Αναζήτησης.
 struct set {
@@ -16,7 +16,7 @@ struct set {
 	int size;					// μέγεθος, ώστε η set_size να είναι Ο(1)
 	CompareFunc compare;		// η διάταξη
 	DestroyFunc destroy_value;	// Συνάρτηση που καταστρέφει ένα στοιχείο του set
-	
+	BList values;				// η bidirectional list που θα αποθηκεύουμε τα values μας
 };
 
 // Ενώ το struct set_node είναι κόμβος ενός Δυαδικού Δέντρου Αναζήτησης
@@ -24,7 +24,16 @@ struct set_node {
 	SetNode parent;
 	SetNode left, right;		// Παιδιά
 	Pointer value;
+	BListNode self;
 };
+static BList values_list = NULL;
+static CompareFunc cur_compare = NULL;
+
+int node_compare(Pointer a, Pointer b) {
+	Pointer _a = ((SetNode)a)->value;
+	Pointer _b = ((SetNode)b)->value;
+	return cur_compare(_a, _b);
+}
 
 
 // Παρατηρήσεις για τις node_* συναρτήσεις
@@ -138,6 +147,17 @@ static SetNode node_insert(SetNode node, CompareFunc compare, Pointer value, boo
 		*inserted = true;			// κάναμε προσθήκη
 		SetNode n = node_create(value);
 		n->parent = cur_parent;
+
+		//προσθέτουμε το Node και στο BList values
+		BListNode parent_node = cur_parent ? blist_find(values_list, cur_parent, node_compare) : NULL;
+		if (parent_node) {
+			if (compare(value, cur_parent->value) > 0)
+				parent_node = blist_next(values_list, parent_node);
+		}
+		//Προσθετουμε το n στο values_list
+		blist_insert(values_list, parent_node, n);
+		n->self = blist_find_node(values_list, n, node_compare);
+
 		return n;
 	}
 
@@ -196,6 +216,8 @@ static SetNode node_remove(SetNode node, CompareFunc compare, Pointer value, boo
 		// Βρέθηκε ισοδύναμη τιμή στον node, οπότε τον διαγράφουμε. Το πώς θα γίνει αυτό εξαρτάται από το αν έχει παιδιά.
 		*removed = true;
 		*old_value = node->value;
+		//πρεπει να διαγραψουμε και τον κομβο απο το blist
+		blist_remove(values_list, node->self);
 
 		if (node->left == NULL) {
 			// Δεν υπάρχει αριστερό υποδέντρο, οπότε διαγράφεται απλά ο κόμβος και νέα ρίζα μπαίνει το δεξί παιδί
@@ -268,6 +290,8 @@ Set set_create(CompareFunc compare, DestroyFunc destroy_value) {
 	set->compare = compare;
 	set->destroy_value = destroy_value;
 
+	set->values = blist_create(NULL); 
+
 	return set;
 }
 
@@ -276,6 +300,9 @@ int set_size(Set set) {
 }
 
 void set_insert(Set set, Pointer value) {
+	values_list = set->values;
+	cur_compare = set->compare;
+
 	bool inserted;
 	Pointer old_value;
 	set->root = node_insert(set->root, set->compare, value, &inserted, &old_value);
@@ -288,6 +315,9 @@ void set_insert(Set set, Pointer value) {
 }
 
 bool set_remove(Set set, Pointer value) {
+	values_list = set->values;
+	cur_compare = set->compare;
+
 	bool removed;
 	Pointer old_value = NULL;
 	set->root = node_remove(set->root, set->compare, value, &removed, &old_value);
